@@ -1,0 +1,871 @@
+<!doctype html>
+<html lang="ru">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<script>if(/tgWebApp/.test(location.hash+location.search))document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>')</script>
+<title>BAZA MT</title>
+<meta name="claude:viewport-fit-sides" content="cover">
+<meta name="description" content="BAZA MT — персональный подбор каналов в Telegram и MAX: проверка, торг и безопасная сделка через гаранта.">
+<meta name="theme-color" content="#060A13">
+<link rel="preconnect" href="https://fonts.googleapis.com">
+<link rel="preconnect" href="https://fonts.gstatic.com" crossorigin>
+<link rel="stylesheet" href="https://fonts.googleapis.com/css2?family=Unbounded:wght@400;500;700;800&family=Manrope:wght@400;500;600;700;800&display=swap">
+<style>
+/* Premium night desk: one continuous deep-navy canvas, TG blue and MAX violet glow through glass; logos float like satellites */
+:root{
+  --bg:#060A13; --bg-2:#0A1122; --panel:#0D1527; --glass:rgba(255,255,255,.035); --glass-2:rgba(255,255,255,.06);
+  --line:rgba(255,255,255,.085); --line-2:rgba(255,255,255,.16);
+  --fg:#EEF2F8; --muted:#94A3B8; --dim:#64748B;
+  --tg:#2AABEE; --blue:#2F6BF2; --violet:#8A3FE0; --good:#3DDC97; --warn:#F5B84B;
+  --grad:linear-gradient(120deg,#2AABEE 0%,#2F6BF2 45%,#6A3FE6 75%,#8A3FE0 100%);
+  --grad-soft:linear-gradient(120deg,rgba(42,171,238,.18),rgba(138,63,224,.18));
+  --display:"Unbounded","Manrope","Segoe UI",system-ui,sans-serif;
+  --body:"Manrope","Segoe UI",system-ui,-apple-system,sans-serif;
+  --r:22px; --ease:cubic-bezier(.2,.7,.2,1);
+  color-scheme:dark;
+}
+@media (prefers-color-scheme: dark){:root:not([data-theme="light"]){--bg:#060A13;--fg:#EEF2F8;--muted:#94A3B8}}
+:root[data-theme="dark"]{--bg:#060A13;--fg:#EEF2F8;--muted:#94A3B8}
+*{box-sizing:border-box}
+html{scroll-behavior:smooth;background:var(--bg)}
+body{background:var(--bg);color:var(--fg);font-family:var(--body);font-size:16px;line-height:1.6;margin:0;overflow-x:hidden;-webkit-font-smoothing:antialiased}
+a{color:inherit}
+img{display:block}
+.wrap{max-width:1180px;margin:0 auto;padding-left:max(16px,env(safe-area-inset-left,0px));padding-right:max(16px,env(safe-area-inset-right,0px))}
+h1,h2,h3{font-family:var(--display);line-height:1.1;text-wrap:balance;margin:0;font-weight:700}
+h2{font-size:clamp(28px,4vw,46px);letter-spacing:-.02em}
+.g{background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.eyebrow{display:inline-flex;align-items:center;gap:10px;font-size:12px;font-weight:800;letter-spacing:.2em;text-transform:uppercase;color:#8FD3F7}
+.eyebrow::before{content:"";width:28px;height:1px;background:var(--grad)}
+.lead{color:var(--muted);font-size:18px;max-width:62ch;margin:0}
+/* ambient canvas */
+.sky{position:fixed;inset:0;z-index:0;pointer-events:none;overflow:hidden}
+.blob{position:absolute;border-radius:50%;filter:blur(90px);opacity:.38;animation:drift 26s var(--ease) infinite alternate}
+.b1{width:620px;height:620px;background:#1D74D8;top:-220px;left:-160px}
+.b2{width:560px;height:560px;background:#6A2FD6;top:30%;right:-220px;animation-duration:32s;animation-delay:-8s}
+.b3{width:480px;height:480px;background:#1E9FE6;bottom:-240px;left:30%;opacity:.22;animation-duration:38s;animation-delay:-14s}
+@keyframes drift{0%{transform:translate(0,0) scale(1)}50%{transform:translate(60px,40px) scale(1.12)}100%{transform:translate(-40px,80px) scale(.95)}}
+.grid-bg{position:absolute;inset:0;background-image:linear-gradient(rgba(255,255,255,.035) 1px,transparent 1px),linear-gradient(90deg,rgba(255,255,255,.035) 1px,transparent 1px);background-size:64px 64px;mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 75%);-webkit-mask-image:radial-gradient(ellipse 80% 60% at 50% 0%,#000 30%,transparent 75%)}
+.sat{position:absolute;width:var(--s,34px);height:var(--s,34px);opacity:var(--o,.14);animation:sat var(--d,22s) ease-in-out infinite;animation-delay:var(--dl,0s)}
+.sat img{width:100%;height:100%;border-radius:28%}
+@keyframes sat{0%,100%{transform:translate(0,0) rotate(-8deg)}33%{transform:translate(26px,-38px) rotate(6deg)}66%{transform:translate(-22px,-14px) rotate(-2deg)}}
+.page{position:relative;z-index:1}
+/* buttons */
+.btn{position:relative;display:inline-flex;align-items:center;justify-content:center;gap:10px;border:0;border-radius:16px;padding:16px 24px;font:700 16px/1 var(--body);text-decoration:none;cursor:pointer;transition:transform .25s var(--ease),box-shadow .25s var(--ease),border-color .25s,background .25s;overflow:hidden;isolation:isolate}
+.btn:focus-visible,.opt:focus-visible,input:focus-visible,textarea:focus-visible,.tab:focus-visible,.chip:focus-visible{outline:2px solid var(--tg);outline-offset:3px}
+.btn-main{background:var(--grad);color:#fff;box-shadow:0 16px 40px -14px rgba(64,90,245,.75),inset 0 1px 0 rgba(255,255,255,.25)}
+.btn-main::after{content:"";position:absolute;inset:0;z-index:-1;background:linear-gradient(105deg,transparent 30%,rgba(255,255,255,.35) 50%,transparent 70%);transform:translateX(-120%);animation:shine 4.5s ease-in-out infinite}
+@keyframes shine{0%,60%{transform:translateX(-120%)}100%{transform:translateX(120%)}}
+.btn-main:hover{transform:translateY(-3px);box-shadow:0 22px 50px -14px rgba(100,80,245,.85)}
+.btn-ghost{background:var(--glass);color:var(--fg);border:1px solid var(--line-2);backdrop-filter:blur(10px)}
+.btn-ghost:hover{border-color:rgba(42,171,238,.6);background:rgba(42,171,238,.08);transform:translateY(-2px)}
+.btn svg{transition:transform .25s var(--ease)}
+.btn:hover svg{transform:translateX(4px)}
+/* header */
+header{position:sticky;top:0;z-index:40;padding-top:env(safe-area-inset-top,0px);transition:background .3s,border-color .3s}
+header.scrolled{background:rgba(6,10,19,.72);backdrop-filter:blur(16px) saturate(140%);-webkit-backdrop-filter:blur(16px) saturate(140%);border-bottom:1px solid var(--line)}
+.nav{display:flex;align-items:center;justify-content:space-between;gap:16px;padding-block:14px}
+.logo{display:flex;align-items:center;gap:11px;text-decoration:none;font-family:var(--display);font-weight:800;font-size:18px;letter-spacing:.04em}
+.mark{position:relative;width:36px;height:36px;border-radius:12px;background:var(--grad);display:grid;place-items:center;color:#fff;font:800 12px/1 var(--display);box-shadow:0 8px 24px -8px rgba(80,90,245,.8)}
+.links{display:flex;gap:26px;font-weight:600;font-size:15px}
+.links a{text-decoration:none;color:var(--muted);transition:color .2s}
+.links a:hover{color:var(--fg)}
+.nav .btn{padding:12px 18px;font-size:14px;border-radius:13px}
+@media (max-width:900px){.links{display:none}}
+/* hero */
+.hero{padding-block:64px 40px;display:grid;grid-template-columns:1.05fr .95fr;gap:56px;align-items:center}
+.hero h1{font-size:clamp(36px,5.6vw,68px);font-weight:800;letter-spacing:-.035em;margin-block:22px 22px}
+.platforms{display:flex;gap:10px;align-items:center;flex-wrap:wrap}
+.pl{display:inline-flex;align-items:center;gap:9px;padding:7px 14px 7px 7px;border-radius:999px;background:var(--glass);border:1px solid var(--line);font-weight:700;font-size:14px;backdrop-filter:blur(8px)}
+.pl img{width:24px;height:24px;border-radius:8px}
+.live{display:inline-flex;align-items:center;gap:8px;color:var(--muted);font-size:13px;font-weight:600;margin-left:6px}
+.live i{width:8px;height:8px;border-radius:50%;background:var(--good);box-shadow:0 0 0 0 rgba(61,220,151,.6);animation:pulse 2s infinite}
+@keyframes pulse{70%{box-shadow:0 0 0 10px rgba(61,220,151,0)}100%{box-shadow:0 0 0 0 rgba(61,220,151,0)}}
+.cta-row{display:flex;gap:12px;flex-wrap:wrap;margin-top:34px}
+.trust{display:grid;grid-template-columns:repeat(3,auto);justify-content:start;gap:34px;margin-top:42px;color:var(--muted);font-size:14px;font-weight:600}
+.trust b{display:block;color:var(--fg);font-family:var(--display);font-size:24px;font-weight:700;letter-spacing:-.02em}
+@media (max-width:560px){.trust{grid-template-columns:1fr 1fr;gap:20px}}
+@media (max-width:980px){.hero{grid-template-columns:1fr;gap:44px;padding-block:40px 24px}.stage{margin-top:40px}}
+/* hero stage */
+.stage{position:relative;min-width:0;perspective:1400px}
+.stage::before{content:"";position:absolute;inset:8% 4%;background:var(--grad);filter:blur(80px);opacity:.28;border-radius:40%;z-index:-1;animation:breathe 7s ease-in-out infinite}
+@keyframes breathe{50%{opacity:.42;transform:scale(1.06)}}
+.assets{display:grid;gap:18px;transform-style:preserve-3d;transition:transform .5s var(--ease)}
+.float-logo{position:absolute;z-index:3;width:76px;height:76px;border-radius:24px;padding:0;filter:drop-shadow(0 18px 30px rgba(0,0,0,.5))}
+.float-logo img{width:100%;height:100%;border-radius:24px}
+.float-logo.tg{top:-66px;right:30%;width:64px;height:64px;animation:bob 6s ease-in-out infinite}
+.float-logo.mx{top:-58px;right:10%;width:54px;height:54px;animation:bob 7s ease-in-out infinite reverse;animation-delay:-2s}
+.float-logo::after{content:"";position:absolute;inset:-14px;border-radius:32px;border:1px solid rgba(255,255,255,.12);animation:ring 3.2s ease-out infinite}
+@keyframes bob{0%,100%{transform:translateY(0) rotate(-10deg)}50%{transform:translateY(-18px) rotate(6deg)}}
+@keyframes ring{0%{transform:scale(.8);opacity:.9}100%{transform:scale(1.35);opacity:0}}
+@media (max-width:560px){.float-logo{width:56px;height:56px}.float-logo.mx{width:50px;height:50px}.float-logo.tg{top:-60px}.float-logo.mx{top:-54px}}
+.tab small{white-space:normal}
+/* glass card + spotlight */
+.glass{position:relative;background:linear-gradient(180deg,rgba(255,255,255,.055),rgba(255,255,255,.02));border:1px solid var(--line);border-radius:var(--r);backdrop-filter:blur(14px);-webkit-backdrop-filter:blur(14px);overflow:hidden}
+.glass::before{content:"";position:absolute;inset:0;pointer-events:none;background:radial-gradient(420px circle at var(--mx,50%) var(--my,-30%),rgba(80,150,255,.14),transparent 45%);opacity:0;transition:opacity .35s}
+.glass:hover::before{opacity:1}
+.glass:hover{border-color:var(--line-2)}
+/* asset card */
+.asset{box-shadow:0 30px 70px -30px rgba(0,0,0,.8);min-width:0}
+.asset-top{display:flex;justify-content:space-between;align-items:center;gap:12px;padding:16px 20px;border-bottom:1px solid var(--line)}
+.asset-top .who{display:flex;align-items:center;gap:12px;min-width:0}
+.asset-top img{width:38px;height:38px;border-radius:12px;flex:none}
+.asset-top small{display:block;color:var(--dim);font-weight:700;font-size:11px;letter-spacing:.14em;text-transform:uppercase}
+.asset-top h3{font-size:16px;margin-top:3px;font-weight:700}
+.tag{color:var(--good);background:rgba(61,220,151,.1);border:1px solid rgba(61,220,151,.25);border-radius:999px;padding:5px 10px;font-size:12px;font-weight:700;white-space:nowrap}
+.metrics{display:grid;grid-template-columns:repeat(3,1fr)}
+.m{padding:12px 18px;min-width:0;border-right:1px solid var(--line);border-bottom:1px solid var(--line)}
+.m:nth-child(3n){border-right:0}
+.m span{display:block;color:var(--dim);font-size:11.5px;font-weight:700;letter-spacing:.02em}
+.m b{font-family:var(--display);font-size:17px;font-weight:500;font-variant-numeric:tabular-nums;letter-spacing:-.01em}
+.m.w2{grid-column:span 2}
+.m.w2 b,.m.hl b{color:#9FDCFB}
+.price-row{display:flex;justify-content:space-between;align-items:center;gap:10px;flex-wrap:wrap;padding:14px 20px;background:rgba(255,255,255,.025)}
+.price-row s{color:var(--dim);font-weight:700;text-decoration-color:#E5484D;text-decoration-thickness:2px}
+.price-row .after{color:var(--muted);font-size:13px;font-weight:600}
+.price-row .after b{font-family:var(--display);color:var(--good);font-size:20px;font-weight:700;margin-left:6px}
+.asset-foot{padding:12px 20px 16px;display:flex;justify-content:space-between;align-items:center;gap:12px;flex-wrap:wrap;border-top:1px solid var(--line)}
+.payback{display:flex;align-items:baseline;gap:8px}
+.payback b{font-family:var(--display);font-size:22px;background:var(--grad);-webkit-background-clip:text;background-clip:text;color:transparent}
+.payback span{color:var(--muted);font-size:13px;font-weight:600}
+.note{font-size:12px;color:var(--dim)}
+@media (max-width:560px){.metrics{grid-template-columns:1fr 1fr}.m:nth-child(3n){border-right:1px solid var(--line)}.m:nth-child(2n){border-right:0}.m.w2{grid-column:1/-1}}
+/* marquee */
+.marquee{position:relative;padding-block:26px;border-block:1px solid var(--line);overflow:hidden;mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent);-webkit-mask-image:linear-gradient(90deg,transparent,#000 12%,#000 88%,transparent)}
+.track{display:flex;gap:14px;width:max-content;animation:run 60s linear infinite}
+.marquee:hover .track{animation-play-state:paused}
+@keyframes run{to{transform:translateX(-50%)}}
+.mq{display:inline-flex;align-items:center;gap:10px;padding:10px 16px;border-radius:999px;background:var(--glass);border:1px solid var(--line);font-weight:700;font-size:14px;white-space:nowrap}
+.mq em{font-style:normal;color:#9FDCFB;font-family:var(--display);font-weight:500;font-size:13px}
+/* sections */
+section{position:relative;padding-block:clamp(56px,7vw,92px)}
+section+section::before{content:"";position:absolute;top:0;left:50%;width:min(880px,80%);height:1px;transform:translateX(-50%);background:linear-gradient(90deg,transparent,rgba(120,150,255,.35),transparent)}
+.sec-head{display:grid;gap:16px;margin-bottom:46px;max-width:780px}
+.sec-head.center{margin-inline:auto;text-align:center;justify-items:center}
+/* why */
+.why{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.why .glass{padding:26px}
+.why h3{font-size:17px;margin-bottom:10px}
+.why p{margin:0;color:var(--muted);font-size:15px}
+.ico{width:46px;height:46px;border-radius:14px;display:grid;place-items:center;background:var(--grad-soft);border:1px solid var(--line-2);color:#9FDCFB;margin-bottom:20px}
+.ico svg{width:22px;height:22px}
+@media (max-width:1020px){.why{grid-template-columns:1fr 1fr}}
+@media (max-width:560px){.why{grid-template-columns:1fr}}
+/* market */
+.mk-grid{display:grid;grid-template-columns:1fr 1fr;gap:18px}
+@media (max-width:980px){.mk-grid{grid-template-columns:1fr}}
+.plat{padding:26px;display:grid;gap:20px;align-content:start}
+.plat-h{display:flex;align-items:center;gap:12px}
+.plat-h img{width:42px;height:42px;border-radius:13px}
+.plat-h h3{font-size:20px}
+.plat-h small{display:block;color:var(--dim);font-size:12px;font-weight:700;letter-spacing:.04em}
+.kpis{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+.kpi{padding:16px;border-radius:16px;background:var(--grad-soft);border:1px solid var(--line-2);min-width:0}
+.kpi b{display:block;font-family:var(--display);font-size:clamp(22px,2.4vw,28px);font-weight:700;letter-spacing:-.02em;line-height:1.1}
+.kpi span{display:block;color:var(--muted);font-size:13px;font-weight:600;margin-top:6px;line-height:1.35}
+.kpi.w{grid-column:1/-1}
+.tier{font-size:11.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8FD3F7;margin:4px 0 -8px}
+.chs{display:grid;gap:8px}
+.ch{display:grid;grid-template-columns:1fr auto auto auto;gap:12px;align-items:center;padding:12px 16px;border-radius:14px;background:var(--glass);border:1px solid var(--line)}
+.ch div{min-width:0}
+.ch b{display:block;font-weight:700;font-size:15px;white-space:nowrap;overflow:hidden;text-overflow:ellipsis}
+.ch small{color:var(--dim);font-size:12px;font-weight:600}
+.ch .n{text-align:right;font-family:var(--display);font-weight:500;font-size:15px;white-space:nowrap}
+.ch .n small{display:block;font-family:var(--body);font-size:11px}
+.ch .er{min-width:56px;text-align:center;font-weight:800;font-size:13px;padding:5px 8px;border-radius:999px;background:rgba(61,220,151,.1);color:var(--good)}
+.ch .er.lo{background:rgba(245,184,75,.12);color:var(--warn)}
+.ch .pr{min-width:92px;text-align:right;font-family:var(--display);font-weight:600;font-size:14px;white-space:nowrap;color:#9FDCFB}
+.ch .pr small{display:block;font-family:var(--body);font-size:11px;color:var(--dim);font-weight:600}
+@media (max-width:1100px) and (min-width:981px){.ch .n small,.ch .pr small{font-size:10px}.ch{gap:8px}}
+@media (max-width:560px){.ch{grid-template-columns:1fr auto;gap:8px 10px}.ch .er{grid-column:2;grid-row:1}.ch .n{grid-column:1;text-align:left}.ch .pr{grid-column:2;text-align:right}}
+.insights{display:grid;grid-template-columns:1fr 1fr;gap:18px;margin-top:18px}
+@media (max-width:980px){.insights{grid-template-columns:1fr}}
+.ins{padding:22px 24px;display:flex;gap:16px;align-items:flex-start}
+.ins .ico{margin:0;flex:none}
+.ins h3{font-size:16px;margin-bottom:6px}
+.ins p{margin:0;color:var(--muted);font-size:14.5px}
+.src{font-size:12px;color:var(--dim);margin:18px 0 0}
+/* CPM / niches */
+.cpm-grid{display:grid;grid-template-columns:.9fr 1.1fr;gap:20px;align-items:start}
+@media (max-width:980px){.cpm-grid{grid-template-columns:1fr}}
+.explain{padding:28px}
+.explain h3{font-size:20px;margin-bottom:14px}
+.explain p{color:var(--muted);margin:0 0 14px}
+.formula{display:flex;flex-wrap:wrap;align-items:center;gap:8px;margin:18px 0;font-weight:700}
+.formula span{padding:8px 12px;border-radius:12px;background:var(--glass-2);border:1px solid var(--line)}
+.formula i{font-style:normal;color:var(--dim)}
+.calc{display:grid;gap:16px;margin-top:22px;padding-top:22px;border-top:1px solid var(--line)}
+.calc label{display:grid;gap:8px;font-weight:700;font-size:14px}
+.calc .row{display:flex;justify-content:space-between;gap:10px}
+.calc .row output{font-family:var(--display);font-weight:500;color:#9FDCFB;font-variant-numeric:tabular-nums}
+input[type=range]{-webkit-appearance:none;appearance:none;width:100%;height:6px;border-radius:99px;background:linear-gradient(90deg,var(--tg) var(--p,50%),rgba(255,255,255,.1) var(--p,50%));outline-offset:6px}
+input[type=range]::-webkit-slider-thumb{-webkit-appearance:none;width:22px;height:22px;border-radius:50%;background:#fff;border:5px solid var(--blue);box-shadow:0 4px 14px rgba(47,107,242,.6);cursor:pointer}
+input[type=range]::-moz-range-thumb{width:14px;height:14px;border-radius:50%;background:#fff;border:5px solid var(--blue);cursor:pointer}
+.result{display:grid;grid-template-columns:1fr 1fr;gap:12px}
+.result div{padding:16px;border-radius:16px;background:var(--grad-soft);border:1px solid var(--line-2)}
+.result span{display:block;font-size:12px;color:var(--muted);font-weight:700}
+.result b{font-family:var(--display);font-size:clamp(18px,2.4vw,24px);font-weight:700;font-variant-numeric:tabular-nums}
+.niches{padding:24px}
+.formula .fx{border-color:rgba(138,63,224,.5);background:var(--grad-soft)}
+.tabs{display:grid;grid-template-columns:repeat(3,1fr);gap:6px;padding:5px;border-radius:16px;background:rgba(0,0,0,.25);border:1px solid var(--line);margin-bottom:20px}
+.tab{min-width:0;padding-inline:8px!important;border:0;background:transparent;color:var(--muted);font:700 14px/1.2 var(--body);padding:11px 14px;border-radius:12px;cursor:pointer;transition:background .25s,color .25s}
+.tab small{display:block;font-weight:600;font-size:11.5px;color:var(--dim);margin-top:3px}
+.tab.on{background:var(--grad);color:#fff;box-shadow:0 10px 24px -12px rgba(80,90,245,.8)}
+.tab.on small{color:rgba(255,255,255,.8)}
+.chips{display:grid;grid-template-columns:repeat(auto-fill,minmax(190px,1fr));gap:8px}
+.chip{display:flex;justify-content:space-between;align-items:center;gap:10px;padding:11px 14px;border-radius:12px;background:var(--glass);border:1px solid var(--line);color:var(--fg);font:600 14px/1.3 var(--body);cursor:pointer;text-align:left;transition:border-color .2s,transform .2s,background .2s;animation:chipIn .45s var(--ease) both}
+.chip:hover{border-color:rgba(42,171,238,.55);background:rgba(42,171,238,.07);transform:translateY(-2px)}
+.chip em{font-style:normal;color:#9FDCFB;font-weight:700;font-size:13px;white-space:nowrap}
+@keyframes chipIn{from{opacity:0;transform:translateY(8px)}}
+.hint{font-size:13px;color:var(--dim);margin:16px 0 0}
+/* pricing */
+.prices{display:grid;grid-template-columns:repeat(3,1fr);gap:16px}
+.price{padding:28px;display:flex;flex-direction:column;gap:14px;min-width:0}
+.price.hot{border-color:transparent;background:linear-gradient(var(--panel),var(--panel)) padding-box,var(--grad) border-box;border:1.5px solid transparent;box-shadow:0 30px 80px -40px rgba(90,80,245,.9)}
+.price .who{font-size:13px;color:var(--dim);font-weight:700}
+.price h3{font-size:19px}
+.price .cost{font-family:var(--display);font-size:26px;font-weight:700;line-height:1.15;letter-spacing:-.02em}
+.price .cost small{display:block;font-family:var(--body);font-size:13px;color:var(--muted);font-weight:600;margin-top:6px;letter-spacing:0}
+.price ul{margin:0;padding:0;list-style:none;color:var(--muted);font-size:15px;display:grid;gap:8px}
+.price li{display:flex;gap:10px}
+.price li::before{content:"";flex:none;width:16px;height:16px;margin-top:4px;border-radius:50%;background:var(--grad-soft) ;border:1px solid rgba(42,171,238,.5);box-shadow:inset 0 0 0 4px rgba(6,10,19,.9)}
+.price .btn{margin-top:auto}
+.badge{align-self:flex-start;background:var(--grad);color:#fff;font-size:11px;font-weight:800;letter-spacing:.12em;text-transform:uppercase;padding:6px 11px;border-radius:999px}
+@media (max-width:1020px){.prices{grid-template-columns:1fr 1fr}}
+@media (max-width:640px){.prices{grid-template-columns:1fr}}
+/* steps */
+.steps{position:relative;display:grid;grid-template-columns:repeat(5,1fr);gap:16px}
+.steps::before{content:"";position:absolute;top:27px;left:5%;right:5%;height:2px;background:var(--line)}
+.steps::after{content:"";position:absolute;top:27px;left:5%;height:2px;width:calc(90% * var(--fill,0));background:var(--grad);transition:width 1.6s var(--ease);box-shadow:0 0 18px rgba(80,120,255,.8)}
+.step{position:relative;z-index:1;min-width:0}
+.step .n{width:56px;height:56px;border-radius:18px;display:grid;place-items:center;font:700 18px/1 var(--display);background:var(--panel);border:1px solid var(--line-2);margin-bottom:18px;transition:background .5s,border-color .5s,box-shadow .5s}
+.steps.lit .step .n{background:var(--grad);border-color:transparent;box-shadow:0 12px 30px -12px rgba(80,90,245,.9)}
+.steps.lit .step:nth-child(2) .n{transition-delay:.3s}.steps.lit .step:nth-child(3) .n{transition-delay:.6s}.steps.lit .step:nth-child(4) .n{transition-delay:.9s}.steps.lit .step:nth-child(5) .n{transition-delay:1.2s}
+.step h3{font-size:16px;margin-bottom:8px}
+.step p{margin:0;color:var(--muted);font-size:14.5px}
+@media (max-width:980px){.steps{grid-template-columns:1fr 1fr}.steps::before,.steps::after{display:none}}
+@media (max-width:520px){.steps{grid-template-columns:1fr}}
+/* cases */
+.cases{display:grid;grid-template-columns:repeat(4,1fr);gap:16px}
+.case{padding:26px 20px}
+.case .num{font-family:var(--display);font-size:clamp(30px,3vw,40px);font-weight:700;letter-spacing:-.03em;line-height:1;margin-bottom:14px;white-space:nowrap}
+.case .num em{font-style:normal;font-size:.42em;letter-spacing:0;margin-left:5px}
+.case small{display:block;font-size:11.5px;font-weight:800;letter-spacing:.16em;text-transform:uppercase;color:#8FD3F7;margin-bottom:14px}
+.case p{margin:0;color:var(--muted);font-size:14.5px}
+.cases-head{display:flex;justify-content:space-between;align-items:end;gap:20px;flex-wrap:wrap;margin-bottom:46px}
+.cases-head .sec-head{margin:0}
+@media (max-width:1020px){.cases{grid-template-columns:1fr 1fr}}
+@media (max-width:520px){.cases{grid-template-columns:1fr}}
+/* quiz */
+.quiz-wrap{position:relative}
+.quiz-wrap::before{content:"";position:absolute;inset:10% 15%;background:var(--grad);filter:blur(110px);opacity:.3;z-index:-1;border-radius:50%}
+.quiz{max-width:780px;margin:0 auto;padding:clamp(22px,4vw,44px);border-radius:28px;background:linear-gradient(180deg,rgba(18,26,48,.92),rgba(10,16,32,.92));border:1px solid var(--line-2);box-shadow:0 40px 100px -40px rgba(0,0,0,.9)}
+.q-top{display:flex;justify-content:space-between;align-items:center;gap:12px;margin-bottom:18px}
+.q-count{font-weight:700;color:var(--muted);font-size:14px;font-variant-numeric:tabular-nums}
+.bar{height:6px;border-radius:99px;background:rgba(255,255,255,.08);overflow:hidden;margin-bottom:30px}
+.bar i{display:block;height:100%;width:0;background:var(--grad);transition:width .45s var(--ease);box-shadow:0 0 14px rgba(80,120,255,.9)}
+.q{animation:qIn .45s var(--ease) both}
+@keyframes qIn{from{opacity:0;transform:translateX(18px)}}
+.q h3{font-size:clamp(20px,2.6vw,27px);margin-bottom:22px}
+.opts{display:grid;grid-template-columns:1fr 1fr;gap:10px}
+@media (max-width:560px){.opts{grid-template-columns:1fr}}
+.opt{text-align:left;border:1px solid var(--line-2);background:var(--glass);color:var(--fg);border-radius:16px;padding:15px 18px;font:600 15px/1.35 var(--body);cursor:pointer;transition:border-color .2s,background .2s,transform .2s}
+.opt:hover{border-color:rgba(42,171,238,.6);background:rgba(42,171,238,.07);transform:translateY(-2px)}
+.opt.on{border-color:var(--tg);background:rgba(42,171,238,.14)}
+.opt small{display:block;color:var(--muted);font-weight:500;font-size:13px}
+.fields{display:grid;gap:14px}
+.fields label{font-weight:700;font-size:14px;display:grid;gap:7px}
+input:not([type=range]),textarea{width:100%;border:1px solid var(--line-2);border-radius:14px;padding:14px 16px;font:500 16px var(--body);background:rgba(0,0,0,.28);color:var(--fg);transition:border-color .2s}
+input:not([type=range]):focus,textarea:focus{border-color:var(--tg)}
+textarea{min-height:90px;resize:vertical}
+::placeholder{color:var(--dim)}
+.q-nav{display:flex;justify-content:space-between;gap:12px;margin-top:26px;flex-wrap:wrap}
+.err{color:#FF7A7A;font-size:14px;font-weight:600;min-height:20px;margin-top:10px}
+.done{text-align:center;display:grid;gap:16px;justify-items:center}
+.done .big{width:72px;height:72px;border-radius:50%;background:var(--grad);display:grid;place-items:center;color:#fff;box-shadow:0 0 0 10px rgba(80,90,245,.15)}
+.done pre{white-space:pre-wrap;text-align:left;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:16px;padding:16px 18px;font:500 14px/1.55 var(--body);margin:0;width:100%;max-width:540px;color:var(--muted)}
+.small{font-size:13px;color:var(--dim)}
+/* faq */
+.faq{display:grid;gap:10px;max-width:860px;margin-inline:auto}
+details{border-radius:18px;padding:0;transition:background .3s}
+summary{cursor:pointer;font-weight:700;font-size:17px;list-style:none;display:flex;justify-content:space-between;align-items:center;gap:16px;padding:20px 24px}
+summary::-webkit-details-marker{display:none}
+summary::after{content:"";flex:none;width:28px;height:28px;border-radius:50%;border:1px solid var(--line-2);background:linear-gradient(#9FDCFB,#9FDCFB) center/12px 2px no-repeat,linear-gradient(#9FDCFB,#9FDCFB) center/2px 12px no-repeat;transition:transform .3s var(--ease)}
+details[open] summary::after{transform:rotate(45deg)}
+details p{margin:0;padding:0 24px 22px;color:var(--muted)}
+/* consult */
+.consult{position:relative;padding:clamp(32px,6vw,64px);border-radius:32px;overflow:hidden;text-align:center;display:grid;justify-items:center;gap:18px;background:radial-gradient(120% 140% at 50% 0%,rgba(47,107,242,.35),transparent 55%),linear-gradient(180deg,#0E1730,#0A0F1F);border:1px solid var(--line-2)}
+.consult::after{content:"";position:absolute;inset:-1px;border-radius:32px;padding:1px;background:conic-gradient(from var(--a,0deg),transparent 0 70%,#2AABEE,#8A3FE0,transparent 100%);-webkit-mask:linear-gradient(#000 0 0) content-box,linear-gradient(#000 0 0);-webkit-mask-composite:xor;mask-composite:exclude;animation:spin 6s linear infinite;pointer-events:none}
+@property --a{syntax:"<angle>";initial-value:0deg;inherits:false}
+@keyframes spin{to{--a:360deg}}
+.consult h2{font-size:clamp(28px,4.4vw,50px)}
+.consult .sub{font-family:var(--display);font-size:13px;letter-spacing:.2em;text-transform:uppercase;color:var(--dim)}
+.consult .lead{text-align:center}
+.consult .cta-row{justify-content:center;margin-top:14px}
+.consult .orb{position:absolute;width:64px;height:64px;opacity:.9;filter:drop-shadow(0 14px 24px rgba(0,0,0,.5))}
+.consult .orb img{width:100%;height:100%;border-radius:20px}
+.consult .o1{left:5%;bottom:10%;animation:bob 7s ease-in-out infinite}
+.consult .o2{right:5%;top:8%;animation:bob 8s ease-in-out infinite reverse}
+@media (max-width:760px){.consult .orb{display:none}}
+/* risk */
+.risk{display:grid;grid-template-columns:auto 1fr;gap:22px;padding:30px;border-radius:24px;border:1px solid rgba(245,184,75,.28);background:linear-gradient(180deg,rgba(245,184,75,.07),rgba(245,184,75,.02))}
+.risk .mk{width:48px;height:48px;border-radius:14px;display:grid;place-items:center;background:rgba(245,184,75,.14);color:var(--warn);font:800 22px/1 var(--display)}
+.risk h3{font-size:clamp(18px,2.2vw,22px);margin:6px 0 14px}
+.risk small{font-size:11.5px;font-weight:800;letter-spacing:.18em;text-transform:uppercase;color:var(--warn)}
+.risk ol{margin:0;padding-left:20px;color:var(--muted);font-size:14.5px;display:grid;gap:8px}
+@media (max-width:620px){.risk{grid-template-columns:1fr}}
+/* footer */
+footer{position:relative;z-index:1;border-top:1px solid var(--line);padding-block:34px 44px;color:var(--muted);font-size:14px}
+.foot{display:flex;justify-content:space-between;gap:20px;flex-wrap:wrap;align-items:center}
+.foot nav{display:flex;gap:20px;flex-wrap:wrap}
+.foot a{text-decoration:none;font-weight:700;color:var(--fg);transition:color .2s}
+.foot a:hover{color:#9FDCFB}
+/* Telegram Mini App */
+.tg header .nav .btn{display:none}
+.tg .hero{padding-top:24px}
+/* reveal */
+.js .rv{opacity:0;transform:translateY(26px);transition:opacity .7s var(--ease),transform .7s var(--ease);transition-delay:var(--dl,0s)}
+.js .rv.in{opacity:1;transform:none}
+/* Телефоны и планшеты: никаких тяжёлых фиксированных слоёв и размытий — фон рисуется вместе со страницей, без пустот при прокрутке */
+@media (max-width:820px),(hover:none){
+  .sky{display:none}
+  html,body{background:
+    radial-gradient(70% 520px at 0% 260px,rgba(29,116,216,.30),transparent 70%),
+    radial-gradient(70% 560px at 100% 1050px,rgba(106,47,214,.30),transparent 70%),
+    radial-gradient(70% 520px at 20% 1750px,rgba(30,159,230,.20),transparent 70%),
+    #060A13;background-size:100% 2100px;background-repeat:repeat-y}
+  .glass{backdrop-filter:none;-webkit-backdrop-filter:none;background:linear-gradient(180deg,rgba(22,32,58,.82),rgba(14,21,40,.82))}
+  .pl,.btn-ghost{backdrop-filter:none;-webkit-backdrop-filter:none}
+  .stage::before{filter:blur(50px);animation:none}
+  .quiz-wrap::before{filter:blur(60px)}
+  .js .rv{transform:translateY(14px);transition-duration:.45s;transition-delay:0s}
+}
+@media (prefers-reduced-motion: reduce){html{scroll-behavior:auto}*,*::before,*::after{animation:none!important;transition:none!important}.js .rv{opacity:1;transform:none;filter:none}}
+</style>
+</head>
+<body>
+
+<script>document.documentElement.classList.add("js")</script>
+
+<div class="sky" aria-hidden="true">
+  <div class="grid-bg"></div>
+  <div class="blob b1"></div><div class="blob b2"></div><div class="blob b3"></div>
+  <span class="sat" style="top:18%;left:6%;--s:30px;--d:24s"><img src="tg.png" alt=""></span>
+  <span class="sat" style="top:62%;left:3%;--s:42px;--d:30s;--dl:-6s;--o:.1"><img src="max.png" alt=""></span>
+  <span class="sat" style="top:40%;right:4%;--s:36px;--d:27s;--dl:-12s"><img src="tg.png" alt=""></span>
+  <span class="sat" style="top:84%;right:12%;--s:28px;--d:22s;--dl:-3s"><img src="max.png" alt=""></span>
+  <span class="sat" style="top:8%;right:30%;--s:22px;--d:20s;--dl:-9s;--o:.1"><img src="max.png" alt=""></span>
+  <span class="sat" style="top:74%;left:42%;--s:24px;--d:26s;--dl:-15s;--o:.08"><img src="tg.png" alt=""></span>
+</div>
+
+<div class="page">
+<header id="hdr">
+  <div class="wrap nav">
+    <a class="logo" href="#top" aria-label="BAZA MT"><span class="mark">MT</span>BAZA MT</a>
+    <nav class="links" aria-label="Разделы">
+      <a href="#why">Почему мы</a><a href="#market">Рынок</a><a href="#cpm">Тематики</a><a href="#prices">Услуги</a><a href="#how">Как работаем</a><a href="#cases">Отзывы</a><a href="#faq">Вопросы</a>
+    </nav>
+    <a class="btn btn-main" href="#quiz">Подобрать канал</a>
+  </div>
+</header>
+
+<main id="top">
+  <div class="wrap hero">
+    <div>
+      <div class="platforms rv">
+        <span class="pl"><img src="tg.png" alt="">Telegram</span>
+        <span class="pl"><img src="max.png" alt="">MAX</span>
+        <span class="live"><i></i>принимаем заявки</span>
+      </div>
+      <h1 class="rv" style="--dl:.08s">Подберём канал, который <span class="g">приносит деньги</span></h1>
+      <p class="lead rv" style="--dl:.16s">Лично под ваш бюджет и цель: находим, проверяем аудиторию и охваты, торгуемся за цену и проводим сделку через гаранта. Вы получаете живой актив, а не накрученные цифры.</p>
+      <div class="cta-row rv" style="--dl:.24s">
+        <a class="btn btn-main" href="#quiz">Подобрать канал за 1 минуту
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+        <a class="btn btn-ghost" href="https://t.me/SOVACH_TUT" target="_blank" rel="noopener">Написать в Telegram</a>
+      </div>
+      <div class="trust rv" style="--dl:.32s">
+        <div><b><span data-count="8">8</span> лет</b>в Telegram</div>
+        <div><b><span data-count="40">40</span> пунктов</b>проверки канала</div>
+        <div><b>от 100 тыс. ₽</b>бюджеты подбора</div>
+      </div>
+    </div>
+
+    <div class="stage rv" style="--dl:.2s">
+      <span class="float-logo tg" aria-hidden="true"><img src="tg.png" alt=""></span>
+      <span class="float-logo mx" aria-hidden="true"><img src="max.png" alt=""></span>
+      <div class="assets" id="tilt">
+        <aside class="asset glass" aria-label="Пример карты актива: психология в Telegram">
+          <div class="asset-top">
+            <div class="who"><img src="tg.png" alt=""><div><small>Карта актива · пример</small><h3>Психология — канал в Telegram</h3></div></div>
+            <span class="tag">проверен ✓</span>
+          </div>
+          <div class="metrics">
+            <div class="m"><span>Подписчики</span><b>30 000</b></div>
+            <div class="m"><span>Охват · ER</span><b>4 500 · 15%</b></div>
+            <div class="m"><span>CPM ниши</span><b>700 ₽</b></div>
+            <div class="m"><span>Цена 1 рекламы</span><b>3 150 ₽</b></div>
+            <div class="m"><span>Рекламы в месяц</span><b>30 постов</b></div>
+            <div class="m hl"><span>Доход в месяц</span><b>≈ 94 500 ₽</b></div>
+          </div>
+          <div class="price-row"><span>Цена: <s>500 000 ₽</s></span><span class="after">после нашего торга<b>300 000 ₽</b></span></div>
+          <div class="asset-foot">
+            <div class="payback"><b>≈ 3 мес.</b><span>окупаемость</span></div>
+            <span class="note">4 500 ÷ 1000 × 700 ₽ × 30 · цифры — пример</span>
+          </div>
+        </aside>
+        <aside class="asset glass" aria-label="Пример карты актива: новости в MAX">
+          <div class="asset-top">
+            <div class="who"><img src="max.png" alt=""><div><small>Карта актива · пример</small><h3>Новости — канал в MAX</h3></div></div>
+            <span class="tag">проверен ✓</span>
+          </div>
+          <div class="metrics">
+            <div class="m"><span>Подписчики</span><b>15 000</b></div>
+            <div class="m"><span>Охват · ER</span><b>3 750 · 25%</b></div>
+            <div class="m"><span>CPM ниши</span><b>1 000 ₽</b></div>
+            <div class="m"><span>Цена 1 рекламы</span><b>3 750 ₽</b></div>
+            <div class="m"><span>Рекламы в месяц</span><b>60 постов</b></div>
+            <div class="m hl"><span>Доход в месяц</span><b>≈ 225 000 ₽</b></div>
+          </div>
+          <div class="price-row"><span>Цена: <s>1 600 000 ₽</s></span><span class="after">после нашего торга<b>1 200 000 ₽</b></span></div>
+          <div class="asset-foot">
+            <div class="payback"><b>≈ 5 мес.</b><span>окупаемость</span></div>
+            <span class="note">3 750 ÷ 1000 × 1 000 ₽ × 60 · цифры — пример</span>
+          </div>
+        </aside>
+      </div>
+    </div>
+  </div>
+
+  <div class="marquee" aria-hidden="true"><div class="track" id="mq"></div></div>
+
+  <section id="why">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Почему BAZA MT</span>
+        <h2>Работаем как ваш <span class="g">личный брокер</span>, а не как биржа</h2>
+      </div>
+      <div class="why">
+        <div class="glass rv">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="12" cy="8" r="4"/><path d="M4 21c1.5-4 4.5-6 8-6s6.5 2 8 6"/></svg></span>
+          <h3>Лично под вас</h3>
+          <p>Никаких витрин и готовых списков. Ищем варианты под вашу задачу, нишу и бюджет.</p>
+        </div>
+        <div class="glass rv" style="--dl:.08s">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><circle cx="11" cy="11" r="7"/><path d="m20 20-3.5-3.5M8 11l2 2 4-4"/></svg></span>
+          <h3>Проверка по 40 пунктам</h3>
+          <p>Аудитория, охваты, график, источники роста, история рекламы. Отсеиваем накрутку до оплаты.</p>
+        </div>
+        <div class="glass rv" style="--dl:.16s">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 2v20M17 6H9.5a3.5 3.5 0 0 0 0 7h5a3.5 3.5 0 0 1 0 7H6"/></svg></span>
+          <h3>Торгуемся за вас</h3>
+          <p>Наша цель — снизить цену канала сильнее, чем стоит наша работа.</p>
+        </div>
+        <div class="glass rv" style="--dl:.24s">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M12 3 4 6v6c0 5 3.5 8 8 9 4.5-1 8-4 8-9V6z"/><path d="m9 12 2 2 4-4"/></svg></span>
+          <h3>Сделка через гаранта</h3>
+          <p>Деньги у гаранта, пока права на канал не перейдут к вам. Telegram и MAX.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="market">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Масштаб рынка</span>
+        <h2>Каналы, которые <span class="g">соперничают с федеральными СМИ</span></h2>
+        <p class="lead">Канал — это собственная аудитория, ежедневный охват и рекламный инвентарь. Поэтому два канала с одинаковым числом подписчиков могут стоить в разы по-разному: решают охват и ниша.</p>
+      </div>
+      <div class="mk-grid">
+        <div class="glass plat rv">
+          <div class="plat-h"><img src="tg.png" alt=""><div><h3>Telegram</h3><small>зрелый рынок с понятной экономикой</small></div></div>
+          <div class="kpis">
+            <div class="kpi"><b>75,7 млн</b><span>человек в месяц в России</span></div>
+            <div class="kpi"><b>≈ 28 млрд ₽</b><span>прогноз рынка посевов в каналах на 2026 год</span></div>
+            <div class="kpi w"><b>1,68 млн каналов</b><span>и 5,64 млрд подписок на них в российском сегменте — огромный выбор, но и много накрученных каналов</span></div>
+          </div>
+          <p class="tier">Крупные каналы</p>
+          <div class="chs">
+            <div class="ch"><div><b>Топор Live</b><small>Новости · CPM 500 ₽</small></div><span class="n">4,1 млн<small>охват 518 тыс.</small></span><span class="er">13%</span><span class="pr">≈ 259 тыс. ₽<small>1 реклама</small></span></div>
+            <div class="ch"><div><b>Mash</b><small>Новости · CPM 500 ₽</small></div><span class="n">3,1 млн<small>охват 430 тыс.</small></span><span class="er">14%</span><span class="pr">≈ 215 тыс. ₽<small>1 реклама</small></span></div>
+            <div class="ch"><div><b>Первый Московский</b><small>Новости · CPM 500 ₽</small></div><span class="n">3,4 млн<small>охват 79 тыс.</small></span><span class="er lo">2%</span><span class="pr">≈ 40 тыс. ₽<small>1 реклама</small></span></div>
+          </div>
+          <p class="tier">Средние каналы</p>
+          <div class="chs">
+            <div class="ch"><div><b>Банкста</b><small>Экономика · CPM 2 500 ₽</small></div><span class="n">440 тыс.<small>охват 71 тыс.</small></span><span class="er">16%</span><span class="pr">≈ 178 тыс. ₽<small>1 реклама</small></span></div>
+            <div class="ch"><div><b>Навигатор спокойствия</b><small>Психология · CPM 950 ₽</small></div><span class="n">272 тыс.<small>охват 127 тыс.</small></span><span class="er">47%</span><span class="pr">≈ 121 тыс. ₽<small>1 реклама</small></span></div>
+          </div>
+        </div>
+        <div class="glass plat rv" style="--dl:.1s">
+          <div class="plat-h"><img src="max.png" alt=""><div><h3>MAX</h3><small>быстрый рост и официальная реклама</small></div></div>
+          <div class="kpis">
+            <div class="kpi"><b>86,2 млн</b><span>человек в месяц — №1 среди мессенджеров</span></div>
+            <div class="kpi"><b>140 млн</b><span>регистраций с момента запуска</span></div>
+            <div class="kpi w"><b>≈ 450 тыс. каналов</b><span>публичных, но только ≈ 37 тыс. из них набрали больше 1 000 подписчиков, а 100 тыс.+ — всего 441. Рынок только формируется: хорошие каналы ещё можно взять дешевле</span></div>
+          </div>
+          <p class="tier">Крупные каналы</p>
+          <div class="chs">
+            <div class="ch"><div><b>Mash</b><small>Новости · CPM 1 000 ₽</small></div><span class="n">1,04 млн<small>охват 412 тыс.</small></span><span class="er">40%</span><span class="pr">≈ 412 тыс. ₽<small>1 реклама</small></span></div>
+            <div class="ch"><div><b>Прямой Эфир</b><small>Новости · CPM 1 000 ₽</small></div><span class="n">1,18 млн<small>охват 308 тыс.</small></span><span class="er">26%</span><span class="pr">≈ 308 тыс. ₽<small>1 реклама</small></span></div>
+            <div class="ch"><div><b>РИА Новости</b><small>Новости · CPM 1 000 ₽</small></div><span class="n">1,24 млн<small>охват 275 тыс.</small></span><span class="er">22%</span><span class="pr">≈ 275 тыс. ₽<small>1 реклама</small></span></div>
+          </div>
+          <p class="tier">Средние каналы</p>
+          <div class="chs">
+            <div class="ch"><div><b>Новости Экономики</b><small>Экономика · CPM 2 500 ₽</small></div><span class="n">183 тыс.<small>охват 85 тыс.</small></span><span class="er">46%</span><span class="pr">≈ 212 тыс. ₽<small>1 реклама</small></span></div>
+            <div class="ch"><div><b>Банкста</b><small>Экономика · CPM 2 500 ₽</small></div><span class="n">253 тыс.<small>охват 17 тыс.</small></span><span class="er lo">7%</span><span class="pr">≈ 42 тыс. ₽<small>1 реклама</small></span></div>
+          </div>
+        </div>
+      </div>
+      <div class="insights">
+        <div class="glass ins rv">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M3 3v18h18"/><path d="m7 15 4-4 3 3 5-6"/></svg></span>
+          <div><h3>Подписчики ≠ охват</h3><p>У «Первого Московского» 3,4 млн подписчиков, но пост видят около 79 тыс. — 2%. У «Топор Live» 4,1 млн и 518 тыс. просмотров — 13%. Цену канала определяет охват, поэтому мы проверяем его в первую очередь.</p></div>
+        </div>
+        <div class="glass ins rv" style="--dl:.1s">
+          <span class="ico"><svg viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M4 12h16M12 4l8 8-8 8"/></svg></span>
+          <div><h3>Медиа уже на двух площадках</h3><p>Mash — 3,1 млн подписчиков в Telegram и 1 млн в MAX. Крупные игроки строят аудиторию сразу в обоих мессенджерах — и вы можете сделать так же.</p></div>
+        </div>
+      </div>
+      <p class="src">Публичные данные: TGStat (ноябрь 2026), MaxBook (август 2026), Mediascope (июнь 2026), VK, АРИР и Telega.in. ER — доля подписчиков, которые видят пост. Цена 1 рекламы — наша оценка по формуле охват ÷ 1 000 × CPM ниши, а не прайс канала. Примеры показывают масштаб рынка и не являются проектами BAZA MT. Цифры меняются.</p>
+    </div>
+  </section>
+
+  <section id="cpm">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Тематики</span>
+        <h2>Аудитория под <span class="g">любую задачу</span></h2>
+        <p class="lead">Сколько стоит реклама в разных нишах Telegram — и сколько на ней может зарабатывать канал.</p>
+      </div>
+      <div class="cpm-grid">
+        <div class="glass explain rv">
+          <h3>Что такое CPM — простыми словами</h3>
+          <p>CPM — это <b style="color:var(--fg)">цена 1 000 просмотров</b> рекламного поста. Столько рекламодатель платит владельцу канала за то, что его рекламу увидят 1 000 человек.</p>
+          <div class="formula"><span>просмотры поста</span><i>÷</i><span>1 000</span><i>×</i><span>CPM</span><i>=</i><span class="fx"><b class="g">цена 1 рекламы</b></span></div>
+          <p>Пример: пост набирает 5 000 просмотров, CPM ниши — 600 ₽. Одна реклама стоит 5 × 600 = <b style="color:var(--fg)">3 000 ₽</b>. Чем дороже ниша, тем больше канал зарабатывает с тех же просмотров.</p>
+          <div class="calc" id="calc">
+            <label><span class="row">Просмотров у поста <output id="cV"></output></span><input type="range" id="rV" min="1000" max="50000" step="500" value="5000"></label>
+            <label><span class="row">CPM ниши <output id="cC"></output></span><input type="range" id="rC" min="100" max="3000" step="50" value="600"></label>
+            <label><span class="row">Реклам в месяц <output id="cN"></output></span><input type="range" id="rN" min="1" max="60" step="1" value="20"></label>
+            <div class="result"><div><span>1 реклама</span><b id="oOne">3 000 ₽</b></div><div><span>Доход в месяц</span><b id="oMon">60 000 ₽</b></div></div>
+          </div>
+        </div>
+        <div class="glass niches rv" style="--dl:.12s">
+          <div class="tabs" role="tablist" id="tabs"></div>
+          <div class="chips" id="chips"></div>
+          <p class="hint">Нажмите на тематику — CPM подставится в калькулятор. Цены — ориентир по внутреннему рынку Telegram, фактическая стоимость зависит от качества аудитории, формата и сезона.</p>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="prices">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Услуги и цены</span>
+        <h2>Платите за результат, <span class="g">а не за обещания</span></h2>
+      </div>
+      <div class="prices">
+        <article class="glass price hot rv">
+          <span class="badge">Главное</span>
+          <span class="who">Инвестор · бюджет от 150 тыс. ₽</span>
+          <h3>Подбор актива</h3>
+          <div class="cost">5% от сделки<small>минимум 10 000 ₽ предоплатой — засчитывается в итог</small></div>
+          <ul><li>3 проверенных варианта с расчётом окупаемости</li><li>Торг и переговоры с владельцем</li><li>Сделка через гаранта и передача прав</li></ul>
+          <a class="btn btn-main" href="#quiz">Подобрать канал</a>
+        </article>
+        <article class="glass price rv" style="--dl:.08s">
+          <span class="who">Бизнес · бюджет от 250 тыс. ₽</span>
+          <h3>Канал под ключ в MAX или Telegram</h3>
+          <div class="cost">от 100 000 ₽<small>+ 15% от рекламного бюджета</small></div>
+          <ul><li>Ниша, упаковка и контент-план</li><li>Закуп подписчиков в проверенных каналах</li><li>Отчёт по каждой ссылке</li></ul>
+          <a class="btn btn-ghost" href="#quiz">Обсудить запуск</a>
+        </article>
+        <article class="glass price rv" style="--dl:.16s">
+          <span class="who">Бизнес · от 50 тыс. ₽ в месяц</span>
+          <h3>Закуп рекламы</h3>
+          <div class="cost">от 10%<small>от рекламного бюджета</small></div>
+          <ul><li>Подбор и проверка площадок</li><li>Креативы и тесты</li><li>Масштаб только окупившихся каналов</li></ul>
+          <a class="btn btn-ghost" href="#quiz">Запустить закуп</a>
+        </article>
+        <article class="glass price rv">
+          <span class="who">Владелец канала</span>
+          <h3>Продажа канала</h3>
+          <div class="cost">3–10%<small>от суммы продажи</small></div>
+          <ul><li>Оценка и подготовка к продаже</li><li>Поиск покупателя</li><li>Безопасная сделка</li></ul>
+          <a class="btn btn-ghost" href="#quiz">Продать канал</a>
+        </article>
+        <article class="glass price rv" style="--dl:.08s">
+          <span class="who">Бюджет от 100 тыс. ₽</span>
+          <h3>Проверка или мини-подбор</h3>
+          <div class="cost">5 000 – 10 000 ₽<small>фиксированно</small></div>
+          <ul><li>Экспертиза канала перед покупкой</li><li>Риски, накрутка, реальная цена</li><li>Ответ в течение 1–2 дней</li></ul>
+          <a class="btn btn-ghost" href="#quiz">Проверить канал</a>
+        </article>
+        <article class="glass price rv" style="--dl:.16s">
+          <span class="who">Не знаете, с чего начать</span>
+          <h3>Бесплатный разбор</h3>
+          <div class="cost">0 ₽<small>15 минут, онлайн</small></div>
+          <ul><li>Подскажем, что реально купить на ваш бюджет</li><li>Telegram или MAX — что выгоднее под вашу цель</li></ul>
+          <a class="btn btn-ghost" href="#quiz">Записаться</a>
+        </article>
+      </div>
+    </div>
+  </section>
+
+  <section id="how">
+    <div class="wrap">
+      <div class="sec-head rv">
+        <span class="eyebrow">Как проходит подбор</span>
+        <h2>От заявки до канала <span class="g">на вашем аккаунте</span></h2>
+      </div>
+      <div class="steps" id="steps">
+        <div class="step rv"><div class="n">1</div><h3>Заявка</h3><p>Отвечаете на 5 вопросов о цели и бюджете.</p></div>
+        <div class="step rv" style="--dl:.1s"><div class="n">2</div><h3>Созвон 15 минут</h3><p>Уточняем задачу, нишу и допустимый риск.</p></div>
+        <div class="step rv" style="--dl:.2s"><div class="n">3</div><h3>Поиск и проверка</h3><p>Находим каналы и проверяем каждый по 40 пунктам.</p></div>
+        <div class="step rv" style="--dl:.3s"><div class="n">4</div><h3>Карта актива</h3><p>3 варианта с охватами, доходом и окупаемостью.</p></div>
+        <div class="step rv" style="--dl:.4s"><div class="n">5</div><h3>Торг и сделка</h3><p>Снижаем цену, проводим оплату через гаранта.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="cases">
+    <div class="wrap">
+      <div class="cases-head">
+        <div class="sec-head rv">
+          <span class="eyebrow">Кейсы и отзывы</span>
+          <h2>Наши <span class="g">результаты</span></h2>
+        </div>
+        <a class="btn btn-ghost rv" id="reviewsBtn" href="https://t.me/BAZA_MT" target="_blank" rel="noopener">Открыть отзывы
+          <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M7 17 17 7M8 7h9v9"/></svg></a>
+      </div>
+      <div class="cases">
+        <div class="glass case rv"><small>Каналы под ключ</small><div class="num g"><span data-count="200">200</span><em>+ каналов</em></div><p>Каналов создано и запущено в Telegram и MAX — для себя и для клиентов.</p></div>
+        <div class="glass case rv" style="--dl:.08s"><small>Подбор активов</small><div class="num g"><span data-count="100">100</span><em>+ млн ₽</em></div><p>Общая стоимость каналов, подобранных, проверенных и купленных за время работы.</p></div>
+        <div class="glass case rv" style="--dl:.16s"><small>Монетизация</small><div class="num g"><span data-count="250">250</span><em>+ млн ₽</em></div><p>Рекламы продано в каналах — знаем, сколько реально зарабатывает канал.</p></div>
+        <div class="glass case rv" style="--dl:.24s"><small>Опыт</small><div class="num g"><span data-count="8">8</span><em>лет</em></div><p>На рынке Telegram с 2018 года, теперь и в MAX. Проверка каждого канала по 40 пунктам.</p></div>
+      </div>
+    </div>
+  </section>
+
+  <section id="quiz">
+    <div class="wrap quiz-wrap">
+      <div class="sec-head center rv">
+        <span class="eyebrow">Подбор за 1 сутки</span>
+        <h2>Расскажите о задаче — <span class="g">пришлём варианты</span></h2>
+      </div>
+      <form class="quiz rv" id="quizForm" novalidate>
+        <div class="q-top"><span class="eyebrow">Подбор канала</span><span class="q-count" id="qCount">Шаг 1 из 6</span></div>
+        <div class="bar"><i id="qBar"></i></div>
+        <div id="qBody"></div>
+        <div class="err" id="qErr" role="alert"></div>
+        <div class="q-nav" id="qNav">
+          <button type="button" class="btn btn-ghost" id="qBack">Назад</button>
+          <button type="button" class="btn btn-main" id="qNext">Дальше</button>
+        </div>
+      </form>
+    </div>
+  </section>
+
+  <section id="faq">
+    <div class="wrap">
+      <div class="sec-head center rv"><span class="eyebrow">Вопросы</span><h2>Частые вопросы</h2></div>
+      <div class="faq">
+        <details class="glass rv"><summary>Вы гарантируете доход с канала?</summary><p>Нет. Канал — цифровой актив с рисками, как любой бизнес. Мы гарантируем честную проверку, расчёт окупаемости на реальных цифрах и безопасную сделку.</p></details>
+        <details class="glass rv"><summary>Почему 5% от сделки, а не фиксированная цена?</summary><p>Так мы заинтересованы найти действительно хороший канал и выторговать цену. Минимальная предоплата 10 000 ₽ засчитывается в итоговую сумму.</p></details>
+        <details class="glass rv"><summary>Telegram или MAX — что выбрать?</summary><p>Зависит от цели. MAX быстро растёт, в нём появилась официальная реклама в каналах. Telegram — зрелый рынок с понятной экономикой. На созвоне разберём, что выгоднее под ваш бюджет.</p></details>
+        <details class="glass rv"><summary>Как защищены деньги?</summary><p>Оплата канала идёт через гаранта. Продавец получает деньги только после того, как права владельца перешли к вам и канал проверен.</p></details>
+        <details class="glass rv"><summary>Что если мой бюджет меньше 150 тысяч?</summary><p>При бюджете от 100 тыс. ₽ подойдёт проверка канала или мини-подбор за 5 000–10 000 ₽. Также можно начать с бесплатного разбора.</p></details>
+      </div>
+    </div>
+  </section>
+
+  <section id="consult">
+    <div class="wrap">
+      <div class="consult rv">
+        <span class="orb o1" aria-hidden="true"><img src="tg.png" alt=""></span>
+        <span class="orb o2" aria-hidden="true"><img src="max.png" alt=""></span>
+        <span class="eyebrow">Конфиденциальная консультация</span>
+        <h2>Обсудим вашу задачу <span class="g">лично</span></h2>
+        <span class="sub">без публичных заявок</span>
+        <p class="lead">Напишите, какой у вас бюджет и цель. Честно скажем, реально ли это, и предложим формат работы. Всё, что вы расскажете, остаётся между нами.</p>
+        <div class="cta-row">
+          <a class="btn btn-main" href="https://t.me/SOVACH_TUT" target="_blank" rel="noopener">Написать нам
+            <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
+          <a class="btn btn-ghost" href="https://t.me/BAZA_MT" target="_blank" rel="noopener">Перейти в канал</a>
+        </div>
+      </div>
+    </div>
+  </section>
+
+  <section id="risk" style="padding-top:0">
+    <div class="wrap">
+      <div class="risk rv">
+        <span class="mk" aria-hidden="true">!</span>
+        <div>
+          <small>Важно</small>
+          <h3>Канал — это бизнес. У бизнеса есть риски.</h3>
+          <ol>
+            <li>BAZA MT оказывает информационно-консультационные, аналитические и агентские услуги и не является стороной сделки купли-продажи канала, если иное прямо не предусмотрено соглашением сторон.</li>
+            <li>Материалы сайта, в том числе расчёты охватов, CPM, дохода и срока окупаемости, носят исключительно информационный и иллюстративный характер, не являются публичной офертой (ст. 437 ГК РФ), индивидуальной инвестиционной рекомендацией или гарантией результата.</li>
+            <li>Исполнитель не гарантирует доходность, рост аудитории или срок окупаемости актива. Фактический результат зависит от решений и действий владельца, качества управления, рыночной конъюнктуры, изменения правил платформ и требований законодательства, а также от последующих вложений.</li>
+            <li>Решение о приобретении актива клиент принимает самостоятельно и несёт связанные с ним риски. Ответственность исполнителя ограничена стоимостью фактически оказанных услуг.</li>
+            <li>Объём услуг, сроки, порядок расчётов и распределение ответственности сторон фиксируются в письменном соглашении до начала работ.</li>
+          </ol>
+        </div>
+      </div>
+    </div>
+  </section>
+</main>
+
+<footer>
+  <div class="wrap foot">
+    <div><b style="color:var(--fg)">BAZA MT</b> · подбор каналов в Telegram и MAX<br><span class="small">© 2018–2026 BAZA MT</span></div>
+    <nav aria-label="Контакты">
+      <a href="https://t.me/BAZA_MT" target="_blank" rel="noopener">Канал BAZA MT</a>
+      <a href="https://t.me/SOVACH_TUT" target="_blank" rel="noopener">Обратная связь</a>
+    </nav>
+  </div>
+</footer>
+</div>
+
+<script>
+document.documentElement.classList.add("js");
+/* Куда отправлять заявки: адрес прокладки Google Apps Script (токен бота хранится там, не на сайте). */
+const LEADS={endpoint:"", contact:"SOVACH_TUT"};
+/* Ссылка на отзывы — вставить, когда будет готова */
+const REVIEWS_URL="";
+if(REVIEWS_URL) document.getElementById("reviewsBtn").href=REVIEWS_URL;
+
+/* ---------- Telegram Mini App ---------- */
+const TG=(window.Telegram&&Telegram.WebApp&&Telegram.WebApp.initData)?Telegram.WebApp:null;
+const TGU=TG&&TG.initDataUnsafe&&TG.initDataUnsafe.user||null;
+if(TG){
+  document.documentElement.classList.add("tg");
+  try{TG.ready();TG.expand();TG.setHeaderColor("#060A13");TG.setBackgroundColor("#060A13");if(TG.disableVerticalSwipes)TG.disableVerticalSwipes()}catch(e){}
+  /* ссылки t.me открываем внутри Telegram */
+  document.addEventListener("click",e=>{const a=e.target.closest&&e.target.closest('a[href^="https://t.me/"]'); if(!a)return; e.preventDefault(); TG.openTelegramLink(a.href)});
+}
+function haptic(t){try{TG&&TG.HapticFeedback&&TG.HapticFeedback.notificationOccurred(t)}catch(e){}}
+
+/* ---------- тематики и CPM ---------- */
+const TIERS=[
+ {t:"CPM до 400 ₽",s:"бюджетные ниши",n:[["18+","100–150"],["Аниме","250–400"],["Игры и приложения","250–400"],["Кино","250–400"],["Маникюр","250–400"],["Мемы","250–350"],["Музыка","150–250"],["Сохранённые материалы","150–250"],["Детские текстовые каналы","150–300"],["Темы для Telegram","100–300"],["Юмор","300–400"]]},
+ {t:"CPM 400–1 500 ₽",s:"массовые ниши",n:[["Авто","450–600"],["Английский","300–600"],["Гороскопы","550–700"],["Здоровье","700–900"],["Животные","400–600"],["Искусство","600–900"],["История","450–600"],["Космос","350–1 000"],["Кулинария","400–700"],["Лайфхаки","500–800"],["Лингвистика","600–900"],["Литература","600–900"],["Маркетплейсы","250–750"],["Мода и красота","500–900"],["Новости","450–600"],["ПДД","400–650"],["Познавательные","450–650"],["Политика","от 800"],["Психология","600–1 300"],["Региональные","800–1 300"],["Саморазвитие","700–1 300"],["Строительство","400–650"],["Фитнес","350–1 000"],["Цитаты","900–1 300"],["Шоу-бизнес","550–700"],["Путешествия","1 000–1 400"]]},
+ {t:"CPM от 1 500 ₽",s:"премиальные ниши",n:[["Акции и выгоды","1 500–1 800"],["Авторские блоги","от 1 500"],["IT","от 1 500"],["Финансы и бизнес","2 000–3 000"],["Маркетинг","1 500–4 000"],["Релокация","1 500–2 000"],["Криптовалюта","от $150–200",1]]}
+];
+const fmt=n=>Math.round(n).toLocaleString("ru-RU").replace(/,/g," ");
+function mid(r){const x=r.replace(/\s/g,"").match(/\d+/g).map(Number); return x.length>1?(x[0]+x[1])/2:x[0]}
+let tier=1;
+function drawTabs(){
+  tabs.innerHTML=TIERS.map((T,i)=>'<button type="button" role="tab" class="tab'+(i===tier?" on":"")+'" aria-selected="'+(i===tier)+'" data-i="'+i+'">'+T.t+'<small>'+T.n.length+' тематик · '+T.s+'</small></button>').join("");
+  tabs.querySelectorAll(".tab").forEach(b=>b.onclick=()=>{tier=+b.dataset.i;drawTabs()});
+  chips.innerHTML=TIERS[tier].n.map((x,j)=>'<button type="button" class="chip" style="animation-delay:'+(j*0.025)+'s" data-c="'+(x[2]?"":mid(x[1]))+'">'+x[0]+'<em>'+x[1]+(x[2]?"":" ₽")+'</em></button>').join("");
+  chips.querySelectorAll(".chip").forEach(b=>b.onclick=()=>{if(!b.dataset.c)return; const v=Math.min(3000,Math.round(b.dataset.c/50)*50); rC.value=v; calc(); document.getElementById("calc").scrollIntoView({behavior:"smooth",block:"center"})});
+}
+const tabs=document.getElementById("tabs"),chips=document.getElementById("chips");
+const rV=document.getElementById("rV"),rC=document.getElementById("rC"),rN=document.getElementById("rN");
+function paint(r){r.style.setProperty("--p",((r.value-r.min)/(r.max-r.min)*100)+"%")}
+function calc(){
+  [rV,rC,rN].forEach(paint);
+  const one=rV.value/1000*rC.value;
+  cV.textContent=fmt(rV.value); cC.textContent=fmt(rC.value)+" ₽"; cN.textContent=rN.value;
+  oOne.textContent=fmt(one)+" ₽"; oMon.textContent=fmt(one*rN.value)+" ₽";
+}
+const cV=document.getElementById("cV"),cC=document.getElementById("cC"),cN=document.getElementById("cN"),oOne=document.getElementById("oOne"),oMon=document.getElementById("oMon");
+[rV,rC,rN].forEach(r=>r.addEventListener("input",calc));
+drawTabs(); calc();
+/* бегущая строка тематик */
+(function(){const all=TIERS.flatMap(T=>T.n.filter(x=>!x[2])).slice(0,40); const h=all.map(x=>'<span class="mq">'+x[0]+'<em>CPM '+x[1]+' ₽</em></span>').join(""); document.getElementById("mq").innerHTML=h+h})();
+
+/* ---------- анимации ---------- */
+const reduce=matchMedia("(prefers-reduced-motion: reduce)").matches;
+const hdr=document.getElementById("hdr");
+addEventListener("scroll",()=>hdr.classList.toggle("scrolled",scrollY>10),{passive:true});
+function countUp(el){const to=+el.dataset.count; if(reduce){el.textContent=to;return} const t0=performance.now(),d=1400; (function f(t){const k=Math.min(1,(t-t0)/d); el.textContent=Math.round(to*(1-Math.pow(1-k,3))); if(k<1)requestAnimationFrame(f)})(t0)}
+if("IntersectionObserver" in window){
+  const io=new IntersectionObserver(es=>es.forEach(e=>{if(!e.isIntersecting)return; e.target.classList.add("in"); e.target.querySelectorAll("[data-count]").forEach(countUp); io.unobserve(e.target)}),{threshold:0,rootMargin:"0px 0px 30% 0px"});
+  document.querySelectorAll(".rv").forEach(el=>io.observe(el));
+  const st=document.getElementById("steps");
+  new IntersectionObserver((es,o)=>es.forEach(e=>{if(e.isIntersecting){st.style.setProperty("--fill",1);st.classList.add("lit");o.disconnect()}}),{threshold:.4}).observe(st);
+} else document.querySelectorAll(".rv").forEach(el=>el.classList.add("in"));
+/* подсветка карточек за курсором */
+document.addEventListener("pointermove",e=>{const g=e.target.closest&&e.target.closest(".glass"); if(!g)return; const r=g.getBoundingClientRect(); g.style.setProperty("--mx",(e.clientX-r.left)+"px"); g.style.setProperty("--my",(e.clientY-r.top)+"px")},{passive:true});
+/* 3D-наклон карт актива */
+(function(){const t=document.getElementById("tilt"); if(reduce||!matchMedia("(pointer:fine)").matches)return; const s=t.parentElement;
+ s.addEventListener("pointermove",e=>{const r=s.getBoundingClientRect(),x=(e.clientX-r.left)/r.width-.5,y=(e.clientY-r.top)/r.height-.5; t.style.transform="rotateY("+(x*8)+"deg) rotateX("+(-y*8)+"deg)"});
+ s.addEventListener("pointerleave",()=>t.style.transform="")})();
+
+/* ---------- квиз ---------- */
+const STEPS=[
+ {k:"service",q:"Что вам нужно?",o:[["Подобрать канал для покупки","инвестиция или бизнес"],["Канал под ключ","создать и вырастить"],["Закуп рекламы","привлечь подписчиков или клиентов"],["Продать канал","оценка и поиск покупателя"],["Проверить канал","перед покупкой"]]},
+ {k:"platform",q:"В каком мессенджере?",o:[["Telegram",""],["MAX",""],["Оба",""],["Пока не знаю","подскажем на созвоне"]]},
+ {k:"budget",q:"Какой бюджет готовы вложить?",o:[["До 100 000 ₽",""],["100 – 150 тыс. ₽",""],["150 – 500 тыс. ₽",""],["500 тыс. – 1 млн ₽",""],["1 – 3 млн ₽",""],["Больше 3 млн ₽",""]]},
+ {k:"goal",q:"Какая главная цель?",o:[["Доход с рекламы","канал как актив"],["Клиенты для бизнеса","продажи через канал"],["Личный бренд",""],["Перепродажа","купить дешевле, продать дороже"]]},
+ {k:"time",q:"Когда планируете начать?",o:[["В ближайшие дни",""],["В ближайшую неделю",""],["В течение месяца",""],["Просто изучаю рынок",""]]},
+ {k:"contact",q:"Куда прислать варианты?",form:true}
+];
+const st={i:0,a:{}};
+if(TGU){st.a.fName=[TGU.first_name,TGU.last_name].filter(Boolean).join(" "); if(TGU.username) st.a.fContact="@"+TGU.username}
+const $=s=>document.getElementById(s);
+function esc(s){return String(s).replace(/[&<>"]/g,c=>({"&":"&amp;","<":"&lt;",">":"&gt;",'"':"&quot;"}[c]))}
+function render(){
+  const s=STEPS[st.i]; $("qErr").textContent="";
+  $("qCount").textContent="Шаг "+(st.i+1)+" из "+STEPS.length;
+  $("qBar").style.width=((st.i)/STEPS.length*100)+"%";
+  $("qBack").style.visibility=st.i?"visible":"hidden";
+  $("qNext").textContent=s.form?"Отправить заявку":"Дальше";
+  if(s.form){
+    $("qBody").innerHTML='<div class="q"><h3>'+s.q+'</h3><div class="fields">'+
+     '<label for="fName">Как к вам обращаться<input id="fName" autocomplete="name" placeholder="Имя"></label>'+
+     '<label for="fContact">'+(TGU?'Telegram или телефон (необязательно — ваш Telegram мы уже видим)':'Telegram или телефон')+'<input id="fContact" placeholder="@username или +7…"></label>'+
+     '<label for="fNiche">Ниша или пожелания (необязательно)<textarea id="fNiche" placeholder="Например: бизнес, недвижимость, охват от 5 000"></textarea></label>'+
+     '</div><p class="small">Нажимая «Отправить заявку», вы соглашаетесь на обработку контактов для связи по заявке.</p></div>';
+    ["fName","fContact","fNiche"].forEach(id=>{const v=st.a[id]; if(v) $(id).value=v; $(id).addEventListener("input",e=>st.a[id]=e.target.value)});
+  } else {
+    $("qBody").innerHTML='<div class="q"><h3>'+s.q+'</h3><div class="opts">'+s.o.map((o,j)=>'<button type="button" class="opt'+(st.a[s.k]===o[0]?" on":"")+'" data-v="'+esc(o[0])+'">'+'<span>'+esc(o[0])+(o[1]?'<small>'+esc(o[1])+'</small>':'')+'</span></button>').join("")+'</div></div>';
+    $("qBody").querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{st.a[s.k]=b.dataset.v; b.classList.add("on"); if(st.i<STEPS.length-1){setTimeout(()=>{st.i++;render()},180)}}));
+  }
+}
+function hot(){return st.a.budget && st.a.budget!=="До 100 000 ₽"&&st.a.budget!=="100 – 150 тыс. ₽"}
+function message(){
+  const a=st.a;
+  return (hot()?"🔥 ГОРЯЧАЯ ЗАЯВКА":"🟦 Заявка (малый бюджет)")+" · BAZA MT\n\n"+
+  "Услуга: "+a.service+"\nМессенджер: "+a.platform+"\nБюджет: "+a.budget+"\nЦель: "+a.goal+"\nСроки: "+a.time+
+  "\n\nИмя: "+(a.fName||"—")+"\nКонтакт: "+(a.fContact||"—")+"\nНиша/пожелания: "+(a.fNiche||"—")+
+  "\n\nИсточник: "+(TG?"Mini App в Telegram":(new URLSearchParams(location.search).get("src")||"сайт"));
+}
+async function send(text){
+  if(!LEADS.endpoint) return false;
+  try{await fetch(LEADS.endpoint,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({text,initData:TG?TG.initData:""})}); return true}catch(e){return false}
+}
+async function finish(){
+  const text=message();
+  const link="https://t.me/"+LEADS.contact+"?text="+encodeURIComponent(text);
+  /* Пока без бота: сразу открываем личку @SOVACH_TUT с готовым текстом заявки */
+  if(!LEADS.endpoint){ try{ if(TG) TG.openTelegramLink(link); else window.open(link,"_blank","noopener") }catch(e){} }
+  const ok=await send(text);
+  haptic(ok?"success":"warning");
+  $("qBar").style.width="100%"; $("qCount").textContent="Готово"; $("qNav").hidden=true;
+  $("qBody").innerHTML='<div class="done q"><div class="big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg></div>'+
+   '<h3>'+(ok?"Заявка принята":"Последний шаг — нажмите «Отправить» в Telegram")+'</h3>'+
+   '<p class="lead" style="margin:0">'+(ok?(TG?"Подтверждение уже пришло в чат с ботом. ":"")+(hot()?"Александр свяжется с вами в течение 15 минут в рабочее время.":"Мы пришлём варианты и бесплатный гайд «Как купить канал и не потерять деньги»."):"Мы открыли чат с Александром, текст заявки уже вставлен. Если Telegram не открылся — нажмите кнопку ниже.")+'</p>'+
+   '<pre>'+esc(text)+'</pre>'+
+   '<a class="btn btn-main" href="'+link+'" target="_blank" rel="noopener">'+(ok?"Написать Александру":"Отправить в Telegram")+'</a>'+
+   '<span class="small">Контакт для связи: @'+LEADS.contact+'</span></div>';
+}
+$("qNext").addEventListener("click",()=>{
+  const s=STEPS[st.i];
+  if(s.form){ if(!TGU&&!(st.a.fContact||"").trim()){ $("qErr").textContent="Укажите Telegram или телефон, чтобы мы могли прислать варианты."; return } finish(); return }
+  if(!st.a[s.k]){ $("qErr").textContent="Выберите один из вариантов."; return }
+  st.i++; render();
+});
+$("qBack").addEventListener("click",()=>{ if(st.i>0){st.i--;render()} });
+$("quizForm").addEventListener("submit",e=>e.preventDefault());
+render();
+</script>
+
+</body>
+</html>
