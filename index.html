@@ -4,6 +4,11 @@
 <meta charset="utf-8">
 <meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
 <script>if(/tgWebApp/.test(location.hash+location.search))document.write('<script src="https://telegram.org/js/telegram-web-app.js"><\/script>')</script>
+<script>try{if(/tgWebApp/.test(location.hash))history.replaceState(null,"",location.pathname+location.search)}catch(e){}</script>
+<!-- Yandex.Metrika counter 114214537 -->
+<script type="text/javascript">(function(m,e,t,r,i,k,a){m[i]=m[i]||function(){(m[i].a=m[i].a||[]).push(arguments)};m[i].l=1*new Date();for(var j=0;j<document.scripts.length;j++){if(document.scripts[j].src===r){return;}}k=e.createElement(t),a=e.getElementsByTagName(t)[0],k.async=1,k.src=r,a.parentNode.insertBefore(k,a)})(window,document,'script','https://mc.yandex.ru/metrika/tag.js','ym');ym(114214537,'init',{webvisor:true,clickmap:true,accurateTrackBounce:true,trackLinks:true});</script>
+<noscript><div><img src="https://mc.yandex.ru/watch/114214537" style="position:absolute; left:-9999px;" alt=""></div></noscript>
+<!-- /Yandex.Metrika counter -->
 <title>BAZA MT</title>
 <meta name="claude:viewport-fit-sides" content="cover">
 <meta name="description" content="BAZA MT — персональный подбор каналов в Telegram и MAX: проверка, торг и безопасная сделка через гаранта.">
@@ -835,7 +840,7 @@ function render(){
     $("fAgree").checked=!!st.a.agree; $("fAgree").addEventListener("change",e=>{st.a.agree=e.target.checked; if(e.target.checked) $("qErr").textContent=""});
   } else {
     $("qBody").innerHTML='<div class="q"><h3>'+s.q+'</h3><div class="opts">'+s.o.map((o,j)=>'<button type="button" class="opt'+(st.a[s.k]===o[0]?" on":"")+'" data-v="'+esc(o[0])+'">'+'<span>'+esc(o[0])+(o[1]?'<small>'+esc(o[1])+'</small>':'')+'</span></button>').join("")+'</div></div>';
-    $("qBody").querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{st.a[s.k]=b.dataset.v; b.classList.add("on"); if(st.i<STEPS.length-1){setTimeout(()=>{st.i++;render()},180)}}));
+    $("qBody").querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{if(st.i===0) goal("quiz_start"); st.a[s.k]=b.dataset.v; b.classList.add("on"); if(st.i<STEPS.length-1){setTimeout(()=>{st.i++;render()},180)}}));
   }
 }
 function hot(){return st.a.budget && st.a.budget!=="До 100 000 ₽"&&st.a.budget!=="100 – 150 тыс. ₽"}
@@ -847,6 +852,8 @@ function message(){
   "\n\n"+B("Имя:")+" "+(a.fName||"—")+"\n"+B("Контакт:")+" "+(a.fContact||"—")+((a.fNiche||"").trim()?"\n"+B("Пожелания:")+" "+a.fNiche.trim():"")+
   "\n\n"+(TG?"Пишу из бота BAZA MT":"Пишу с сайта BAZA MT"+(src?" ("+src+")":""));
 }
+/* цели Яндекс Метрики: quiz_start — начал квиз, lead — отправил заявку */
+function goal(n,p){try{window.ym&&ym(114214537,"reachGoal",n,p)}catch(e){}}
 function md(t){return esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")}
 async function send(text){
   /* автоматическая отправка — только внутри Telegram (подпись initData проверяет бот) */
@@ -857,6 +864,7 @@ async function finish(){
   const text=message();
   const link="https://t.me/"+LEADS.contact+"?text="+encodeURIComponent(text);
   $("qNext").disabled=true;
+  goal("lead",{budget:st.a.budget,service:st.a.service,hot:hot(),from:"miniapp"});
   const ok=await send(text);
   /* не получилось автоматически — открываем личку @SOVACH_TUT с готовым текстом заявки */
   if(!ok){ try{ if(TG) TG.openTelegramLink(link); else window.open(link,"_blank","noopener") }catch(e){} }
