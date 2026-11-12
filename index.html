@@ -286,6 +286,10 @@ textarea{min-height:90px;resize:vertical}
 .done .big{width:72px;height:72px;border-radius:50%;background:var(--grad);display:grid;place-items:center;color:#fff;box-shadow:0 0 0 10px rgba(80,90,245,.15)}
 .done pre{white-space:pre-wrap;text-align:left;background:rgba(0,0,0,.3);border:1px solid var(--line);border-radius:16px;padding:16px 18px;font:500 14px/1.55 var(--body);margin:0;width:100%;max-width:540px;color:var(--muted)}
 .small{font-size:13px;color:var(--dim)}
+.agree{display:flex;gap:10px;align-items:flex-start;margin-top:14px;font-size:13px;line-height:1.45;color:var(--dim);cursor:pointer}
+.agree input{flex:none;width:20px;height:20px;margin:0;accent-color:#5a6cf5;cursor:pointer}
+.agree a{color:var(--muted);text-decoration:underline;text-underline-offset:2px}
+.done pre b{color:var(--fg)}
 /* faq */
 .faq{display:grid;gap:10px;max-width:860px;margin-inline:auto}
 details{border-radius:18px;padding:0;transition:background .3s}
@@ -726,6 +730,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding-bloc
     <nav aria-label="Контакты">
       <a href="https://t.me/BAZA_MT" target="_blank" rel="noopener">Канал BAZA MT</a>
       <a href="https://t.me/SOVACH_TUT" target="_blank" rel="noopener">Обратная связь</a>
+      <a href="https://dziganlimon.github.io/baza-mt/policy.html" target="_blank" rel="noopener">Политика конфиденциальности</a>
     </nav>
   </div>
 </footer>
@@ -799,6 +804,9 @@ document.addEventListener("pointermove",e=>{const g=e.target.closest&&e.target.c
  s.addEventListener("pointerleave",()=>t.style.transform="")})();
 
 /* ---------- квиз ---------- */
+/* согласие на обработку ПДн (152-ФЗ): отдельный документ, галочка по умолчанию НЕ стоит */
+const LEGAL_BASE="https://dziganlimon.github.io/baza-mt/";
+const CONSENT_HTML='<label class="agree" for="fAgree"><input type="checkbox" id="fAgree"><span>Я даю <a href="'+LEGAL_BASE+'consent.html" target="_blank" rel="noopener">согласие на обработку персональных данных</a> и ознакомлен(а) с <a href="'+LEGAL_BASE+'policy.html" target="_blank" rel="noopener">политикой конфиденциальности</a></span></label>';
 const STEPS=[
  {k:"service",q:"Что вам нужно?",o:[["Подобрать канал для покупки","инвестиция или бизнес"],["Канал под ключ","создать и вырастить"],["Закуп рекламы","привлечь подписчиков или клиентов"],["Продать канал","оценка и поиск покупателя"],["Проверить канал","перед покупкой"]]},
  {k:"platform",q:"В каком мессенджере?",o:[["Telegram",""],["MAX",""],["Оба",""],["Пока не знаю","подскажем на созвоне"]]},
@@ -822,25 +830,28 @@ function render(){
      '<label for="fName">Как к вам обращаться<input id="fName" autocomplete="name" placeholder="Имя"></label>'+
      '<label for="fContact">'+(TGU?'Telegram или телефон (необязательно — ваш Telegram мы уже видим)':'Telegram или телефон')+'<input id="fContact" placeholder="@username или +7…"></label>'+
      '<label for="fNiche">Ниша или пожелания (необязательно)<textarea id="fNiche" placeholder="Например: бизнес, недвижимость, охват от 5 000"></textarea></label>'+
-     '</div><p class="small">Нажимая «Отправить заявку», вы соглашаетесь на обработку контактов для связи по заявке.</p></div>';
+     '</div>'+CONSENT_HTML+'</div>';
     ["fName","fContact","fNiche"].forEach(id=>{const v=st.a[id]; if(v) $(id).value=v; $(id).addEventListener("input",e=>st.a[id]=e.target.value)});
+    $("fAgree").checked=!!st.a.agree; $("fAgree").addEventListener("change",e=>{st.a.agree=e.target.checked; if(e.target.checked) $("qErr").textContent=""});
   } else {
     $("qBody").innerHTML='<div class="q"><h3>'+s.q+'</h3><div class="opts">'+s.o.map((o,j)=>'<button type="button" class="opt'+(st.a[s.k]===o[0]?" on":"")+'" data-v="'+esc(o[0])+'">'+'<span>'+esc(o[0])+(o[1]?'<small>'+esc(o[1])+'</small>':'')+'</span></button>').join("")+'</div></div>';
     $("qBody").querySelectorAll(".opt").forEach(b=>b.addEventListener("click",()=>{st.a[s.k]=b.dataset.v; b.classList.add("on"); if(st.i<STEPS.length-1){setTimeout(()=>{st.i++;render()},180)}}));
   }
 }
 function hot(){return st.a.budget && st.a.budget!=="До 100 000 ₽"&&st.a.budget!=="100 – 150 тыс. ₽"}
+/* текст заявки: **жирный** Telegram превращает в жирный шрифт при отправке */
 function message(){
-  const a=st.a;
-  return (hot()?"🔥 ГОРЯЧАЯ ЗАЯВКА":"🟦 Заявка (малый бюджет)")+" · BAZA MT\n\n"+
-  "Услуга: "+a.service+"\nМессенджер: "+a.platform+"\nБюджет: "+a.budget+"\nЦель: "+a.goal+"\nСроки: "+a.time+
-  "\n\nИмя: "+(a.fName||"—")+"\nКонтакт: "+(a.fContact||"—")+"\nНиша/пожелания: "+(a.fNiche||"—")+
-  "\n\nИсточник: "+(TG?"Mini App в Telegram":(new URLSearchParams(location.search).get("src")||"сайт"));
+  const a=st.a, B=s=>"**"+s+"**", src=new URLSearchParams(location.search).get("src");
+  return "Здравствуйте! Меня интересует:\n\n"+
+  B("Услуга:")+" "+a.service+"\n"+B("Мессенджер:")+" "+a.platform+"\n"+B("Бюджет:")+" "+a.budget+"\n"+B("Цель:")+" "+a.goal+"\n"+B("Сроки:")+" "+a.time+
+  "\n\n"+B("Имя:")+" "+(a.fName||"—")+"\n"+B("Контакт:")+" "+(a.fContact||"—")+((a.fNiche||"").trim()?"\n"+B("Пожелания:")+" "+a.fNiche.trim():"")+
+  "\n\n"+(TG?"Пишу из бота BAZA MT":"Пишу с сайта BAZA MT"+(src?" ("+src+")":""));
 }
+function md(t){return esc(t).replace(/\*\*(.+?)\*\*/g,"<b>$1</b>")}
 async function send(text){
   /* автоматическая отправка — только внутри Telegram (подпись initData проверяет бот) */
   if(!LEADS.endpoint||!TG) return false;
-  try{const r=await fetch(LEADS.endpoint,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({text,initData:TG.initData})}); return r.ok}catch(e){return false}
+  try{const r=await fetch(LEADS.endpoint,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({text,hot:hot(),initData:TG.initData})}); return r.ok}catch(e){return false}
 }
 async function finish(){
   const text=message();
@@ -853,14 +864,15 @@ async function finish(){
   $("qBar").style.width="100%"; $("qCount").textContent="Готово"; $("qNav").hidden=true;
   $("qBody").innerHTML='<div class="done q"><div class="big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg></div>'+
    '<h3>'+(ok?"Заявка принята":"Последний шаг — нажмите «Отправить» в Telegram")+'</h3>'+
-   '<p class="lead" style="margin:0">'+(ok?(TG?"Подтверждение уже пришло в чат с ботом. ":"")+(hot()?"Александр свяжется с вами в течение 15 минут в рабочее время.":"Мы пришлём варианты и бесплатный гайд «Как купить канал и не потерять деньги»."):"Мы открыли чат с Александром, текст заявки уже вставлен. Если Telegram не открылся — нажмите кнопку ниже.")+'</p>'+
-   '<pre>'+esc(text)+'</pre>'+
+   '<p class="lead" style="margin:0">'+(ok?(TG?"Подтверждение уже пришло в чат с ботом. ":"")+(hot()?"Александр свяжется с вами в течение 15 минут в рабочее время.":"Мы подберём варианты под ваш бюджет и свяжемся с вами."):"Мы открыли чат с Александром, текст заявки уже вставлен. Если Telegram не открылся — нажмите кнопку ниже.")+'</p>'+
+   '<pre>'+md(text)+'</pre>'+
    '<a class="btn btn-main" href="'+link+'" target="_blank" rel="noopener">'+(ok?"Написать Александру":"Отправить в Telegram")+'</a>'+
    '<span class="small">Контакт для связи: @'+LEADS.contact+'</span></div>';
 }
 $("qNext").addEventListener("click",()=>{
   const s=STEPS[st.i];
-  if(s.form){ if(!TGU&&!(st.a.fContact||"").trim()){ $("qErr").textContent="Укажите Telegram или телефон, чтобы мы могли прислать варианты."; return } finish(); return }
+  if(s.form){ if(!TGU&&!(st.a.fContact||"").trim()){ $("qErr").textContent="Укажите Telegram или телефон, чтобы мы могли прислать варианты."; return }
+    if(!st.a.agree){ $("qErr").textContent="Отметьте согласие на обработку персональных данных."; return } finish(); return }
   if(!st.a[s.k]){ $("qErr").textContent="Выберите один из вариантов."; return }
   st.i++; render();
 });
