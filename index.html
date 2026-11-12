@@ -734,7 +734,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding-bloc
 <script>
 document.documentElement.classList.add("js");
 /* Куда отправлять заявки: адрес прокладки Google Apps Script (токен бота хранится там, не на сайте). */
-const LEADS={endpoint:"", contact:"SOVACH_TUT"};
+const LEADS={endpoint:"https://baza-mt-bot.sovach23.workers.dev/lead", contact:"SOVACH_TUT"};
 /* Ссылка на отзывы — вставить, когда будет готова */
 const REVIEWS_URL="";
 if(REVIEWS_URL) document.getElementById("reviewsBtn").href=REVIEWS_URL;
@@ -838,15 +838,17 @@ function message(){
   "\n\nИсточник: "+(TG?"Mini App в Telegram":(new URLSearchParams(location.search).get("src")||"сайт"));
 }
 async function send(text){
-  if(!LEADS.endpoint) return false;
-  try{await fetch(LEADS.endpoint,{method:"POST",mode:"no-cors",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({text,initData:TG?TG.initData:""})}); return true}catch(e){return false}
+  /* автоматическая отправка — только внутри Telegram (подпись initData проверяет бот) */
+  if(!LEADS.endpoint||!TG) return false;
+  try{const r=await fetch(LEADS.endpoint,{method:"POST",headers:{"Content-Type":"text/plain;charset=utf-8"},body:JSON.stringify({text,initData:TG.initData})}); return r.ok}catch(e){return false}
 }
 async function finish(){
   const text=message();
   const link="https://t.me/"+LEADS.contact+"?text="+encodeURIComponent(text);
-  /* Пока без бота: сразу открываем личку @SOVACH_TUT с готовым текстом заявки */
-  if(!LEADS.endpoint){ try{ if(TG) TG.openTelegramLink(link); else window.open(link,"_blank","noopener") }catch(e){} }
+  $("qNext").disabled=true;
   const ok=await send(text);
+  /* не получилось автоматически — открываем личку @SOVACH_TUT с готовым текстом заявки */
+  if(!ok){ try{ if(TG) TG.openTelegramLink(link); else window.open(link,"_blank","noopener") }catch(e){} }
   haptic(ok?"success":"warning");
   $("qBar").style.width="100%"; $("qCount").textContent="Готово"; $("qNav").hidden=true;
   $("qBody").innerHTML='<div class="done q"><div class="big"><svg width="30" height="30" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="3" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="m5 12 5 5L20 7"/></svg></div>'+
