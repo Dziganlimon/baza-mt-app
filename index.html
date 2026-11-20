@@ -392,7 +392,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding-bloc
       <div class="cta-row rv" style="--dl:.24s">
         <a class="btn btn-main" href="#quiz">Подобрать канал за 1 минуту
           <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
-        <a class="btn btn-ghost" href="https://t.me/SOVACH_TUT" target="_blank" rel="noopener">Написать в Telegram</a>
+        <a class="btn btn-ghost" href="https://t.me/MT_BAZA" target="_blank" rel="noopener">Написать в Telegram</a>
       </div>
       <div class="trust rv" style="--dl:.32s">
         <div><b><span data-count="8">8</span> лет</b>в Telegram</div>
@@ -701,7 +701,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding-bloc
         <span class="sub">без публичных заявок</span>
         <p class="lead">Напишите, какой у вас бюджет и цель. Честно скажем, реально ли это, и предложим формат работы. Всё, что вы расскажете, остаётся между нами.</p>
         <div class="cta-row">
-          <a class="btn btn-main" href="https://t.me/SOVACH_TUT" target="_blank" rel="noopener">Написать нам
+          <a class="btn btn-main" href="https://t.me/MT_BAZA" target="_blank" rel="noopener">Написать нам
             <svg width="18" height="18" viewBox="0 0 24 24" fill="none" stroke="currentColor" stroke-width="2.5" stroke-linecap="round" stroke-linejoin="round" aria-hidden="true"><path d="M5 12h14M13 6l6 6-6 6"/></svg></a>
           <a class="btn btn-ghost" href="https://t.me/BAZA_MT" target="_blank" rel="noopener">Перейти в канал</a>
         </div>
@@ -734,7 +734,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding-bloc
     <div><b style="color:var(--fg)">BAZA MT</b> · подбор каналов в Telegram и MAX<br><span class="small">© 2018–2026 BAZA MT</span></div>
     <nav aria-label="Контакты">
       <a href="https://t.me/BAZA_MT" target="_blank" rel="noopener">Канал BAZA MT</a>
-      <a href="https://t.me/SOVACH_TUT" target="_blank" rel="noopener">Обратная связь</a>
+      <a href="https://t.me/MT_BAZA" target="_blank" rel="noopener">Обратная связь</a>
       <a href="https://bazamt.ru/policy.html" target="_blank" rel="noopener">Политика конфиденциальности</a>
     </nav>
   </div>
@@ -744,7 +744,7 @@ footer{position:relative;z-index:1;border-top:1px solid var(--line);padding-bloc
 <script>
 document.documentElement.classList.add("js");
 /* Куда отправлять заявки: адрес прокладки Google Apps Script (токен бота хранится там, не на сайте). */
-const LEADS={endpoint:"https://baza-mt-bot.sovach23.workers.dev/lead", contact:"SOVACH_TUT"};
+const LEADS={endpoint:"https://baza-mt-bot.sovach23.workers.dev/lead", contact:"MT_BAZA"};
 /* Ссылка на отзывы — вставить, когда будет готова */
 const REVIEWS_URL="";
 if(REVIEWS_URL) document.getElementById("reviewsBtn").href=REVIEWS_URL;
@@ -866,7 +866,7 @@ async function finish(){
   $("qNext").disabled=true;
   goal("lead",{budget:st.a.budget,service:st.a.service,hot:hot(),from:"miniapp"});
   const ok=await send(text);
-  /* не получилось автоматически — открываем личку @SOVACH_TUT с готовым текстом заявки */
+  /* не получилось автоматически — открываем личку @MT_BAZA с готовым текстом заявки */
   if(!ok){ try{ if(TG) TG.openTelegramLink(link); else window.open(link,"_blank","noopener") }catch(e){} }
   haptic(ok?"success":"warning");
   $("qBar").style.width="100%"; $("qCount").textContent="Готово"; $("qNav").hidden=true;
